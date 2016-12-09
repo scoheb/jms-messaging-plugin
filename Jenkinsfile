@@ -27,8 +27,8 @@ node('docker') {
     stage('Test') {
         docker.image('jenkins/ath').inside(containerArgs) {
             sh '''
-                eval $(./vnc.sh > /dev/null 2>&1)
-                mvn test -Duser.home=/var/maven -Dtest=AmqMessagingPluginIntegrationTest -DforkCount=1 -B
+                eval $(./vnc.sh 2> /dev/null)
+                mvn test -Duser.home=/var/maven -DforkCount=1 -B
             '''
         }
     }

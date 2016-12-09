@@ -7,9 +7,10 @@ if [ ! -z "$1" ]; then
   display=":$1"
 fi
 
-vncserver -kill $display
-vncserver -geometry 1750x1250 $display > /dev/null
-#(vncviewer $display || vncviewer localhost$display) > /dev/null 2>1 &
-(vncviewer $display || vncviewer localhost$display) > /dev/null &
+vncserver -kill $display > /dev/null 2>&1
+vncserver -geometry 1750x1250 $display > /dev/null 2>&1
+if [ -x "$(which vncviewer)" ] ; then
+    (vncviewer $display || vncviewer localhost$display) > /dev/null &
+fi
 
 echo export BROWSER_DISPLAY=$display
