@@ -42,5 +42,6 @@ RUN touch /home/ath-user/.vnc/xstartup && chmod a+x /home/ath-user/.vnc/xstartup
 # have in ENTRYPOINT as the container is started as ath-user.
 USER root
 RUN chmod ug+s "$(which docker)"
-CMD ["service", "docker", "start"]
+ENTRYPOINT service docker restart && cat
+
 
