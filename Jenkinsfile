@@ -8,10 +8,10 @@ node('docker') {
     /*checkout scm*/
     git changelog: false, poll: false, url: 'https://github.com/scoheb/jms-messaging-plugin.git'
 
+    String containerArgs = '-v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.m2:/var/maven/.m2'
     stage('Build') {
         /* Performing some clever trickery to map our ~/.m2 into the container */
 
-        String containerArgs = '-v /var/run/docker.sock:/var/run/docker.sock -v $HOME/.m2:/var/maven/.m2'
         /* Make sure our directory is there, if Docker creates it, it gets owned by 'root' */
         sh 'mkdir -p $HOME/.m2'
 
