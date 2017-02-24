@@ -3,7 +3,7 @@
 # see docs/DOCKER.md for usage
 #
 
-FROM debian:sid
+FROM debian:stable
 MAINTAINER ogondza@gmail.com
 
 RUN apt-get -y update && \
