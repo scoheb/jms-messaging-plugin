@@ -33,14 +33,19 @@
       <j:when test="${empty(instance)}">
         <j:set var="checked" value="${gdescriptor.getFirstProviderOverrides();}"/>
         <j:set var="value" value="${gdescriptor.getFirstProviderOverrideTopic();}"/>
+        <j:set var="useQueues" value="false"/>
       </j:when>
       <j:otherwise>
         <j:set var="checked" value="${instance.getOverrides() != null}"/>
         <j:set var="value" value="${instance.getOverrides().getTopic();}"/>
+        <j:set var="useQueues" value="${instance.getOverrides().getUseQueues();}"/>
       </j:otherwise>
     </j:choose>
     <table>
       <f:optionalBlock field="overrides" title="Override provider topic" checked="${checked}">
+        <f:entry title="${%Use queues rather than topics}" field="useQueues">
+          <f:checkbox default="false" checked="${useQueues}"/>
+        </f:entry>
         <f:entry title="${%Topic name}" field="topic">
           <f:textbox value="${value}"/>
         </f:entry>

@@ -92,6 +92,26 @@ public class ActiveMqMessagingWorker extends JMSMessagingWorker {
         this.provider = (ActiveMqMessagingProvider) messagingProvider;
     }
 
+    public MessageConsumer createSubscriber(Session session, String selector) throws JMSException {
+        Destination destination = createDestination(session, this.topic);
+        MessageConsumer subscription = null;
+        if (overrides == null) {
+            if (provider.getUseQueues()) {
+                subscription = session.createConsumer(destination, selector, false);
+            } else {
+                subscription = session.createDurableSubscriber((Topic)destination, jobname, selector, false);
+            }
+        } else {
+            if (overrides.getUseQueues() != null && overrides.getUseQueues()) {
+                // queue overridden...force sending to queue
+                subscription = session.createConsumer(destination, selector, false);
+            } else {
+                subscription = session.createDurableSubscriber((Topic)destination, jobname, selector, false);
+            }
+        }
+        return subscription;
+    }
+
     @Override
     public boolean subscribe(String jobname, String selector) {
         this.topic = getTopic(provider);
@@ -104,13 +124,7 @@ public class ActiveMqMessagingWorker extends JMSMessagingWorker {
                     if (subscriber == null) {
                         log.info("Subscribing job '" + jobname + "' to '" + this.topic + "' topic.");
                         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                        if (provider.getUseQueues()) {
-                            Queue destination = session.createQueue(this.topic);
-                            subscriber = session.createConsumer(destination, selector, false);
-                        } else {
-                            Topic destination = session.createTopic(this.topic);
-                            subscriber = session.createDurableSubscriber(destination, jobname, selector, false);
-                        }
+                        subscriber = createSubscriber(session, selector);
                         log.info("Successfully subscribed job '" + jobname + "' to '" + this.topic + "' topic with selector: " + selector);
                     } else {
                         log.fine("Already subscribed to '" + this.topic + "' topic with selector: " + selector + " for job '" + jobname);
@@ -352,6 +366,26 @@ public class ActiveMqMessagingWorker extends JMSMessagingWorker {
         connection = null;
     }
 
+    private Destination createDestination(Session session, String topicOrQueue) throws JMSException {
+        Destination destination = null;
+        // no overrides...check global config
+        if (overrides == null) {
+            if (provider.getUseQueues()) {
+                destination = session.createQueue(topicOrQueue);
+            } else {
+                destination = session.createTopic(topicOrQueue);
+            }
+        } else {
+            if (overrides.getUseQueues() != null && overrides.getUseQueues()) {
+                // queue overridden...force sending to queue
+                destination = session.createQueue(topicOrQueue);
+            } else {
+                destination = session.createTopic(topicOrQueue);
+            }
+        }
+        return destination;
+    }
+
     @Override
     public SendResult sendMessage(Run<?, ?> build, TaskListener listener, ProviderData pdata) {
         ActiveMQPublisherProviderData pd = (ActiveMQPublisherProviderData)pdata;
@@ -371,7 +405,7 @@ public class ActiveMqMessagingWorker extends JMSMessagingWorker {
                 connection.start();
 
                 session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                Destination destination = session.createTopic(ltopic);
+                Destination destination = createDestination(session, ltopic);
                 publisher = session.createProducer(destination);
 
                 message = session.createTextMessage("");
@@ -393,7 +427,6 @@ public class ActiveMqMessagingWorker extends JMSMessagingWorker {
 
                     envVarParts.put("BUILD_STATUS", build.getResult().toString());
                 }
-
 
                 EnvVars baseEnvVars = build.getEnvironment(listener);
                 EnvVars envVars = new EnvVars();
@@ -510,13 +543,7 @@ public class ActiveMqMessagingWorker extends JMSMessagingWorker {
                     connection.setClientID(ip + "_" + UUID.randomUUID().toString());
                     connection.start();
                     Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-                    if (provider.getUseQueues()) {
-                        Queue destination = session.createQueue(ltopic);
-                        consumer = session.createConsumer(destination, pd.getSelector(), false);
-                    } else {
-                        Topic destination = session.createTopic(ltopic);
-                        consumer = session.createDurableSubscriber(destination, jobname, pd.getSelector(), false);
-                    }
+                    consumer = createSubscriber(session, pd.getSelector());
 
                     long startTime = new Date().getTime();
                     Integer timeout = (pd.getTimeout() != null ? pd.getTimeout() : ActiveMQSubscriberProviderData.DEFAULT_TIMEOUT_IN_MINUTES)*60*1000;

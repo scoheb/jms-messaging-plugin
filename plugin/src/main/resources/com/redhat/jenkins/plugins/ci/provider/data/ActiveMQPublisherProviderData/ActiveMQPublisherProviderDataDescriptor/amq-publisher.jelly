@@ -30,16 +30,21 @@
       <j:when test="${empty(instance)}">
         <j:set var="checked" value="${pdata.hasOverrides();}"/>
         <j:set var="value" value="${pdata.getPublisherTopic();}"/>
+        <j:set var="useQueues" value="false"/>
         <j:set var="name" value="${pdata.getName();}"/>
       </j:when>
       <j:otherwise>
         <j:set var="checked" value="${instance.getOverrides() != null}"/>
         <j:set var="value" value="${instance.getOverrides().getTopic();}"/>
+        <j:set var="useQueues" value="${instance.getOverrides().getUseQueues();}"/>
         <j:set var="name" value="${instance.getName();}"/>
       </j:otherwise>
     </j:choose>
     <table width="100%">
-      <f:optionalBlock field="overrides" title="Override provider topic" checked="${checked}">
+      <f:optionalBlock field="overrides" title="Override provider topic/queue" checked="${checked}">
+        <f:entry title="${%Use queues rather than topics}" field="useQueues">
+          <f:checkbox default="false" checked="${useQueues}"/>
+        </f:entry>
         <f:entry title="${%Topic name}" field="topic">
           <f:textbox value="${value}"/>
         </f:entry>

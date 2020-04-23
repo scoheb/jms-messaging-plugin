@@ -17,6 +17,7 @@ public class MessagingProviderOverrides implements Describable<MessagingProvider
 
     private String topic;
     private String queue;
+    private Boolean useQueues;
 
     @Whitelisted
     @DataBoundConstructor
@@ -24,11 +25,13 @@ public class MessagingProviderOverrides implements Describable<MessagingProvider
         this.setTopic(topic);
     }
 
+    public Boolean getUseQueues() {
+        return useQueues;
+    }
+
     public String getTopic() {
         return topic;
     }
-
-
     public String getQueue() {
         return queue;
     }
@@ -41,6 +44,11 @@ public class MessagingProviderOverrides implements Describable<MessagingProvider
     @DataBoundSetter
     public void setQueue(String queue) {
         this.queue = queue;
+    }
+
+    @DataBoundSetter
+    public void setUseQueues(Boolean useQueues) {
+        this.useQueues = useQueues;
     }
 
     @Override

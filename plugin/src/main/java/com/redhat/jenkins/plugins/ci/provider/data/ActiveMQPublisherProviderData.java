@@ -136,6 +136,7 @@ public class ActiveMQPublisherProviderData extends ActiveMQProviderData {
             MessagingProviderOverrides mpo = null;
             if (!jo.getJSONObject("overrides").isNullObject()) {
                 mpo = new MessagingProviderOverrides(jo.getJSONObject("overrides").getString("topic"));
+                mpo.setUseQueues(jo.getJSONObject("overrides").getBoolean("useQueues"));
             }
             return new ActiveMQPublisherProviderData(
                     jo.getString("name"),

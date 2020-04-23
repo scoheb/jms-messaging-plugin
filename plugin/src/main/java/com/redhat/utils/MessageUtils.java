@@ -132,8 +132,14 @@ public class MessageUtils {
         JMSMessagingWorker worker =
                 config.getProvider(pdata.getName()).createWorker(pdata, build.getParent().getName());
         SendResult sendResult = worker.sendMessage(build, listener, pdata);
-        String completedMessage = "Sent successfully with messageId: " + sendResult.getMessageId();
-        log.info(completedMessage);
+        String completedMessage;
+        if (sendResult.isSucceeded()) {
+            completedMessage = "Sent successfully with messageId: " + sendResult.getMessageId();
+            log.info(completedMessage);
+        } else {
+            completedMessage = "Send message failed";
+            log.severe(completedMessage);
+        }
         listener.getLogger().println(completedMessage);
         return sendResult;
     }
